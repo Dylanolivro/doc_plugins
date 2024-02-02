@@ -21,22 +21,16 @@ function crawl($url, $items)
     // Récupéeration du code source d'une url
     $content = file_get_contents($url);
     /* transformation en objet dom parsable */
-    $content = str_get_html($content);
-    $articles_path = 'article';
-    $title_path = 'h3';
-    $url_path = 'a';
-    $date_path = '.date';
-    $abstract_path = '.content p';
+    $divs = json_decode($content, true);
+    // $divs = $divs['result];
 
-    $divs = $content->find($articles_path);
-    echo count($divs);
     foreach ($divs as $idx => $div) {
         /* si j'ai pas de titre je skip */
         $item = new MYNEWS();
-        $item->_Titre = MAPI_Tools::String_Clean(trim(html_entity_decode($div->find($title_path, 0)->plaintext, ENT_QUOTES, 'utf-8')));
+        $item->_Titre = MAPI_Tools::String_Clean(trim(html_entity_decode($div['title'], ENT_QUOTES, 'utf-8')));
         // $item->_URL = htmlspecialchars(html_entity_decode($div->find($url_path, 0)->href, ENT_COMPAT, 'utf-8'), ENT_COMPAT, "utf-8");
 
-        $url = trim(htmlspecialchars(html_entity_decode($div->find($url_path, 0)->href, ENT_COMPAT, 'utf-8'), ENT_COMPAT, "utf-8"));
+        $url = trim(htmlspecialchars(html_entity_decode($div['link'], ENT_COMPAT, 'utf-8'), ENT_COMPAT, "utf-8"));
         if (strpos($url, "") !== false) {
             $item->_URL = $url;
         } else {
@@ -45,10 +39,10 @@ function crawl($url, $items)
 
         /* Date du jour  si pas de date */
         // $date = date('d-m-Y');
-        $date = trim($div->find($date_path, 0)->plaintext);
+        $date = trim($div['date']);
         $item->_Date = MYNEWS::DATE_Conversion($date);
 
-        $item->_Abstract = MAPI_Tools::String_Clean(trim(html_entity_decode($div->find($abstract_path, 0)->plaintext, ENT_QUOTES, 'utf-8')));
+        $item->_Abstract = MAPI_Tools::String_Clean(trim(html_entity_decode($div['description'], ENT_QUOTES, 'utf-8')));
         array_push($items, $item);
     }
 
