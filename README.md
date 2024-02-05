@@ -4,7 +4,6 @@
 
 **[JSON Default Plugin](https://github.com/Dylanolivro/doc_plugins/blob/main/json_default.php)**
 
-
 ## Utilisation de cURL lorsque file_get_contents ne fonctionne pas
 
 La fonction `file_get_contents_curl` est une alternative à `file_get_contents` qui utilise cURL pour récupérer le contenu d'une URL.
@@ -65,7 +64,7 @@ Si le nombre d'articles est trop élevé (par exemple 300), on peut optimiser le
 Cette fonction est utilisée pour nettoyer les chaînes de caractères, en particulier pour `title` et `abstract`.
 
 ```php
-$item->_Abstract = MAPI_Tools::String_Clean(trim(html_entity_decode($div->find($title_path, 0)->plaintext, ENT_QUOTES, 'utf-8')));
+$item->_Titre_ = MAPI_Tools::String_Clean(trim(html_entity_decode($div->find($title_path, 0)->plaintext, ENT_QUOTES, 'utf-8')));
 ```
 
 ## Complétion des URL incomplètes
@@ -84,8 +83,8 @@ function crawl($url, $items){
     } else {
         $item->_URL = "https://academic.oup.com" . $url;
     }
-}
     ...
+}
 ```
 
 ## Gestion des articles sans résumé
@@ -94,7 +93,7 @@ Dans certains cas, tous les articles n’ont pas de résumé. Pour gérer cela, 
 
 ```php
 if (isset($div->find($abstract_path, 0)->plaintext)) {
-    MAPI_Tools::String_Clean(trim(html_entity_decode($div->find($abstract_path, 0)->plaintext, ENT_QUOTES, 'utf-8')));
+    $item->_Abstract = MAPI_Tools::String_Clean(trim(html_entity_decode($div->find($abstract_path, 0)->plaintext, ENT_QUOTES, 'utf-8')));
 }
 ```
 
@@ -153,3 +152,28 @@ https://api.mytwip.com/v3.9/get_dev_content.php?url=VOTRE_URL
 ```
 
 Remplacez `VOTRE_URL` par l’URL du site que vous souhaitez accéder. Cela peut aider à contourner les problèmes de chargement ou de blocage de la connexion.
+
+
+## Récupération de la date d’un article
+
+La fonction `get_date` permet de récupérer la date d’un article en accédant directement à l’URL de l’article. Cependant, cette opération peut ralentir le plugin car elle nécessite un accès supplémentaire à chaque URL d’article.
+ 
+```php
+function get_date($url){
+    $content = file_get_contents($url);
+    /* transformation en objet dom parsable */
+    $content = str_get_html($content);
+
+    $date = $content->find(".publish time", 0)->datetime;
+    return $date;
+}
+
+function crawl($url, $items){
+    ...
+
+    $date = get_date($item->_URL);
+    $item->_Date = MYNEWS::DATE_Conversion($date);
+
+    ...
+}
+```
