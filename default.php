@@ -1,4 +1,7 @@
 <?php
+/*
+@author Dylan Olivro
+*/
 
 header('Content-Type: text/html; charset=utf-8');
 ini_set('user_agent', 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.8.1.9) Gecko/20071025 Firefox/2.0.0.9');
@@ -15,7 +18,7 @@ $items = crawl($url, $items);
 
 function crawl($url, $items)
 {
-    // Récupéeration du code source d'une url
+    // Récupération du code source d'une url
     $content = file_get_contents($url);
     /* transformation en objet dom parsable */
     $content = str_get_html($content);
@@ -23,7 +26,7 @@ function crawl($url, $items)
     $title_path = 'h3';
     $url_path = 'a';
     $date_path = '.date';
-    $abstract_path = '.content p';
+    $abstract_path = '.content';
 
     $divs = $content->find($articles_path);
     echo count($divs);

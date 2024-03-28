@@ -4,9 +4,25 @@
 
 **[JSON Default Plugin](https://github.com/Dylanolivro/doc_plugins/blob/main/json_default.php)**
 
+# Tables des matières
+
+- [Utilisation de cURL lorsque file_get_contents ne fonctionne pas](#utilisation-de-curl-lorsque-file_get_contents-ne-fonctionne-pas)
+    - [SSL certificate problem](#ssl-certificate-problem)
+- [Optimisation du chargement des articles](#optimisation-du-chargement-des-articles)
+- [Nettoyage de la chaîne de caractères](#nettoyage-de-la-chaîne-de-caractères)
+- [Complétion des URL incomplètes](#complétion-des-url-incomplètes)
+- [Gestion des articles sans résumé](#gestion-des-articles-sans-résumé)
+- [Récupération de texte dans une balise contenant une autre balise](#récupération-de-texte-dans-une-balise-contenant-une-autre-balise)
+    - [Gestion des espaces blancs, des sauts de ligne ou d’autres nœuds invisibles](#gestion-des-espaces-blancs-des-sauts-de-ligne-ou-dautres-nœuds-invisibles)
+- [Contournement des problèmes de chargement et de blocage de connexion](#contournement-des-problèmes-de-chargement-et-de-blocage-de-connexion)
+- [Récupération de la date d’un article](#récupération-de-la-date-dun-article)
+- [Trier les items par dates](#trier-les-items-par-dates)
+- [Récupération d'un element entre 2 balises HTML](#récupération-dun-element-entre-2-balises-html)
+
 ## Utilisation de cURL lorsque file_get_contents ne fonctionne pas
 
-La fonction `file_get_contents_curl` est une alternative à `file_get_contents` qui utilise cURL pour récupérer le contenu d'une URL.
+La fonction `file_get_contents_curl` est une alternative à `file_get_contents` qui utilise cURL pour récupérer le
+contenu d'une URL.
 
 ```php
 function file_get_contents_curl($url)
@@ -39,9 +55,18 @@ par :
 $content = file_get_contents_curl($url);
 ```
 
+### SSL certificate problem
+
+```php
+curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
+curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
+```
+
 ## Optimisation du chargement des articles
 
-Si le nombre d'articles est trop élevé (par exemple 300), on peut optimiser le chargement en coupant le code HTML pour récupérer moins de code. Cela accélère le chargement. Ensuite, on ajuste simplement le nombre d'articles récupérés avec `array_slice`.
+Si le nombre d'articles est trop élevé (par exemple 300), on peut optimiser le chargement en coupant le code HTML pour
+récupérer moins de code. Cela accélère le chargement. Ensuite, on ajuste simplement le nombre d'articles récupérés
+avec `array_slice`.
 
 ```php
     $content = file_get_contents($url);
@@ -57,7 +82,8 @@ Si le nombre d'articles est trop élevé (par exemple 300), on peut optimiser le
     $divs = array_slice($content->find($articles_path), 0, 15);
 ```
 
-**Notez que le nombre '80000' est arbitraire et doit être ajusté en fonction de la taille du contenu que vous récupérez.**
+**Notez que le nombre '80000' est arbitraire et doit être ajusté en fonction de la taille du contenu que vous récupérez.
+**
 
 ## Nettoyage de la chaîne de caractères
 
@@ -69,7 +95,8 @@ $item->_Titre_ = MAPI_Tools::String_Clean(trim(html_entity_decode($div->find($ti
 
 ## Complétion des URL incomplètes
 
-Cette fonction permet d'ajouter le début de l'URL pour les URL incomplètes. Il faut faire attention à la construction de l'URL, parfois un '/' à la fin de l'URL est nécessaire.
+Cette fonction permet d'ajouter le début de l'URL pour les URL incomplètes. Il faut faire attention à la construction de
+l'URL, parfois un '/' à la fin de l'URL est nécessaire.
 
 ```php
 $url = 'https://academic.oup.com/eurpub/advance-articles?login=false';
@@ -89,7 +116,8 @@ function crawl($url, $items){
 
 ## Gestion des articles sans résumé
 
-Dans certains cas, tous les articles n’ont pas de résumé. Pour gérer cela, vous pouvez vérifier si le résumé existe avant de le nettoyer.
+Dans certains cas, tous les articles n’ont pas de résumé. Pour gérer cela, vous pouvez vérifier si le résumé existe
+avant de le nettoyer.
 
 ```php
 if (isset($div->find($abstract_path, 0)->plaintext)) {
@@ -101,7 +129,8 @@ if (isset($div->find($abstract_path, 0)->plaintext)) {
 
 ## Récupération de texte dans une balise contenant une autre balise
 
-Cette fonction permet de récupérer du texte dans une balise qui contient une autre balise. Par exemple, pour récupérer le texte après le titre dans le code HTML suivant :
+Cette fonction permet de récupérer du texte dans une balise qui contient une autre balise. Par exemple, pour récupérer
+le texte après le titre dans le code HTML suivant :
 
 ```php
 <div class="card-type-1__content">
@@ -126,7 +155,8 @@ var_dump($abstract);
 
 ### Gestion des espaces blancs, des sauts de ligne ou d’autres nœuds invisibles
 
-Si des espaces blancs, des sauts de ligne ou d’autres nœuds invisibles sont présents, vous pouvez utiliser le code suivant pour les gérer :
+Si des espaces blancs, des sauts de ligne ou d’autres nœuds invisibles sont présents, vous pouvez utiliser le code
+suivant pour les gérer :
 
 ```php
 $divNode = $div->find($abstract_path,0);
@@ -141,23 +171,27 @@ $divNode = $div->find($abstract_path,0);
     $item->_Abstract = $abstract;
 ```
 
-**Explication** : Ce code parcourt tous les nœuds de la div ciblée. Si un nœud est un nœud de texte, il nettoie le texte et l’ajoute à la variable $abstract. À la fin, `$abstract` contient tout le texte de la div, nettoyé et sans nœuds invisibles.
+**Explication** : Ce code parcourt tous les nœuds de la div ciblée. Si un nœud est un nœud de texte, il nettoie le texte
+et l’ajoute à la variable $abstract. À la fin, `$abstract` contient tout le texte de la div, nettoyé et sans nœuds
+invisibles.
 
 ## Contournement des problèmes de chargement et de blocage de connexion
 
-Si vous rencontrez des problèmes de chargement infini ou si le site bloque la connexion, vous pouvez utiliser le service mytwip pour récupérer le contenu. Il suffit de préfixer l’URL avec l’adresse du service mytwip comme suit :
+Si vous rencontrez des problèmes de chargement infini ou si le site bloque la connexion, vous pouvez utiliser le service
+mytwip pour récupérer le contenu. Il suffit de préfixer l’URL avec l’adresse du service mytwip comme suit :
 
 ```
 https://api.mytwip.com/v3.9/get_dev_content.php?url=VOTRE_URL
 ```
 
-Remplacez `VOTRE_URL` par l’URL du site que vous souhaitez accéder. Cela peut aider à contourner les problèmes de chargement ou de blocage de la connexion.
-
+Remplacez `VOTRE_URL` par l’URL du site que vous souhaitez accéder. Cela peut aider à contourner les problèmes de
+chargement ou de blocage de la connexion.
 
 ## Récupération de la date d’un article
 
-La fonction `get_date` permet de récupérer la date d’un article en accédant directement à l’URL de l’article. Cependant, cette opération peut ralentir le plugin car elle nécessite un accès supplémentaire à chaque URL d’article.
- 
+La fonction `get_date` permet de récupérer la date d’un article en accédant directement à l’URL de l’article. Cependant,
+cette opération peut ralentir le plugin car elle nécessite un accès supplémentaire à chaque URL d’article.
+
 ```php
 function get_date($url){
     $content = file_get_contents($url);
@@ -177,3 +211,33 @@ function crawl($url, $items){
     ...
 }
 ```
+
+## Trier les items par dates
+
+```php
+usort($items, function($a, $b) {
+    return $b->_Date - $a->_Date;
+});
+
+return array_slice($items,0,20);
+```
+
+## Récupération d'un element entre 2 balises HTML
+
+```php
+function find_string($string, $start, $end)
+{
+    $string = ' ' . $string;
+    $ini = strpos($string, $start);
+    if ($ini == 0) return '';
+    $ini += strlen($start);
+    $len = strpos($string, $end, $ini) - $ini;
+    return substr($string, $ini, $len);
+}
+```
+
+**Exemple :**
+
+````php
+$title = find_string($div, "<h1 class='m-1'", "</h1>");
+````
